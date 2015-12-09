@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Slack Application Engineer Coding Exercise</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css" rel="stylesheet">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <style>
+      .highlightable-tag {
+        border-radius: 4px;
+      }
+    </style>
+    <script type=text/javascript>
+
+      var currentHighlightTag = null
+
+      function clearCurrentTagHighlighting() {
+        $('.' + currentHighlightTag).css('background-color', '');
+      }
+
+      function clearAll() {
+        clearCurrentTagHighlighting();
+        $('#tag-buttons').empty()
+        $('#error').hide()
+        $('#formatted_html').hide()
+      }
+
+      function createHighlightButton(tag, count, color) {
+        return $('<button />', {
+          class: 'tag-button',
+          id: 'button-' + tag,
+          text: tag + ': ' + count,
+          click: function() {
+            clearCurrentTagHighlighting()
+            currentHighlightTag = 'tag-' + tag
+            $('.' + currentHighlightTag).css('background-color', color);
+          }
+        });
+      }
+
+      function onFetchedFormattedHtml(response) {
+        clearAll()
+        $('#formatted_html')
+            .removeClass('hidden')
+            .html(response.formatted_html)
+            .show()
+            .each(function(i, block) {
+              hljs.highlightBlock(block);
+            });
+
+        $.each(response.tag_to_count, function(tag, count) {
+          $('#tag-buttons').append(createHighlightButton(tag, count, 'lightgreen'));
+        });
+      }
+
+      function onFailedToFetchFormattedHtml(error) {
+        clearAll()
+        $('#error')
+            .removeClass('hidden')
+            .html('<strong>Error</strong> ' + error.responseText)
+            .show()
+            .delay(20000)
+            .fadeOut();
+      }
+
+      $(function() {
+        $('#fetch_form').submit(function(event) {
+          event.preventDefault();
+          $.ajax({
+            type: 'POST',
+            url: '{{ url_for("parse_url") }}',
+            data: $('#fetch_form').serialize(),
+            success: onFetchedFormattedHtml,
+            error: onFailedToFetchFormattedHtml
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Slack Application Engineer Coding Exercise</h1>
+      <p>Instructional text goes here
+      <div id="error" class="alert alert-danger hidden"></div>
+      <form id="fetch_form" method="post">
+        <label>URL to fetch: </label>
+        <input type="text" name="fetch_url" required>
+        <button type="submit">Fetch</button>
+      </form>
+      <div id="tag-buttons"></div>
+      <pre id="formatted_html" class='html hidden'></pre>
+    </div>
+  </body>
+</html>
