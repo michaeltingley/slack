@@ -5,95 +5,54 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/foundation.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-    <style>
-      .highlightable-tag {
-        border-radius: 4px;
-      }
-    </style>
-    <script type=text/javascript>
-
-      var currentHighlightTag = null
-
-      function clearCurrentTagHighlighting() {
-        $('.' + currentHighlightTag).css('background-color', '');
-      }
-
-      function clearAll() {
-        clearCurrentTagHighlighting();
-        $('#tag-buttons').empty()
-        $('#error').hide()
-        $('#formatted_html').hide()
-      }
-
-      function createHighlightButton(tag, count, color) {
-        return $('<button />', {
-          class: 'tag-button',
-          id: 'button-' + tag,
-          text: tag + ': ' + count,
-          click: function() {
-            clearCurrentTagHighlighting()
-            currentHighlightTag = 'tag-' + tag
-            $('.' + currentHighlightTag).css('background-color', color);
-          }
-        });
-      }
-
-      function onFetchedFormattedHtml(response) {
-        clearAll()
-        $('#formatted_html')
-            .removeClass('hidden')
-            .html(response.formatted_html)
-            .show()
-            .each(function(i, block) {
-              hljs.highlightBlock(block);
-            });
-
-        $.each(response.tag_to_count, function(tag, count) {
-          $('#tag-buttons').append(createHighlightButton(tag, count, 'lightgreen'));
-        });
-      }
-
-      function onFailedToFetchFormattedHtml(error) {
-        clearAll()
-        $('#error')
-            .removeClass('hidden')
-            .html('<strong>Error</strong> ' + error.responseText)
-            .show()
-            .delay(20000)
-            .fadeOut();
-      }
-
-      $(function() {
-        $('#fetch_form').submit(function(event) {
-          event.preventDefault();
-          $.ajax({
-            type: 'POST',
-            url: '{{ url_for("parse_url") }}',
-            data: $('#fetch_form').serialize(),
-            success: onFetchedFormattedHtml,
-            error: onFailedToFetchFormattedHtml
-          });
-        });
-      });
-    </script>
+    <script src="/static/js/scripts.js"></script>
   </head>
   <body>
     <div class="container">
-      <h1>Slack Application Engineer Coding Exercise</h1>
-      <p>Instructional text goes here
-      <div id="error" class="alert alert-danger hidden"></div>
-      <form id="fetch_form" method="post">
-        <label>URL to fetch: </label>
-        <input type="text" name="fetch_url" required>
-        <button type="submit">Fetch</button>
-      </form>
-      <div id="tag-buttons"></div>
-      <pre id="formatted_html" class='html hidden'></pre>
+      <div>
+        <div class="col-md-10">
+          <h1>Slack Application Engineer Coding Exercise</h1>
+          <p>Please enter a URL below. We'll fetch the source for you, and let you highlight the tags that we find in the source.
+          <div id="error" class="alert alert-danger collapse"></div>
+          <form id="fetch_form" class="form-horizontal">
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="fetch_url">URL to fetch</label>
+              <div class="col-sm-8">
+                <input class="form-control" type="text" name="fetch_url" id="fetch_url" placeholder="URL" required>
+              </div>
+              <div class="col-sm-2">
+                <button class="form-control btn btn-primary" type="submit">Fetch</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-md-2 right-sidebar">
+          <h4>Try an example!</h4>
+          <ol class="list-unstyled">
+            <li><a>google.com</a></li>
+            <li><a>slack.com</a></li>
+            <li><a>stackoverflow.com</a></li>
+            <li><a>tingley.org</a></li>
+            <li><a>wikipedia.com</a></li>
+          </ol>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <div id="fetch_url_spinner" class="spinner collapse">
+          <div class="rect1"></div>
+          <div class="rect2"></div>
+          <div class="rect3"></div>
+          <div class="rect4"></div>
+          <div class="rect5"></div>
+        </div>
+        <ul class="pager" id="tag-items"></ul>
+        <pre id="formatted_html" class='html collapse'></pre>
+      </div>
     </div>
   </body>
 </html>
