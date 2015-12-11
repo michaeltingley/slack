@@ -73,10 +73,15 @@ def home():
 def parse_url():
     """Fetches the provided webpage, wraps its tags, and returns it.
 
-    Attempts to fetch the webpage found in the form's fetch_url field. Marks up
+    Attempts to fetch the webpage found in the form's fetch_url field. If the
+    form's reformat field is set to true, uses BeautifulSoup's prettify function
+    to reformat the original source and make it more human-friendly. Marks up
     the source by escaping the fetched characters and wrapping tags in spans
     with a class attribute named 'tag-' followed by the name of the tag. Returns
     a JSON object containing the marked up source html and the tags.
+
+    Note that reformatting source that was originally invalid may introduce new
+    tags and change the tag count when compared to the original version.
 
     If there is an error fetching or decoding the webpage, returns an HTTP error
     with an error code and message indicating the nature of the issue.
@@ -88,7 +93,6 @@ def parse_url():
                 encountered in the webpage
     """
     entered_url = request.form['fetch_url']
-    reformat = 'reformat' in request.form and request.form['reformat']
     try:
         http_message = try_urlopen(entered_url)
         encoded_html = http_message.read()
@@ -106,7 +110,7 @@ def parse_url():
             'The url %s could not be reached: %s.' %
             (entered_url, error.reason), 400)
 
-    if reformat:
+    if 'reformat' in request.form and request.form['reformat']:
         html = BeautifulSoup(html, 'html.parser').prettify()
 
     marked_up_html = TagHighlighter(html)
