@@ -43,8 +43,12 @@ function createTagItem(tag, count, color) {
       text: tag + ': ' + count,
       click: function() {
         clearHighlighting();
-        currentHighlightTag = tag;
-        updateHighlighting(color);
+        if (currentHighlightTag == tag) {
+          currentHighlightTag = null;
+        } else {
+          currentHighlightTag = tag;
+          updateHighlighting(color);
+        }
       }
     })
   });
