@@ -1,24 +1,52 @@
+"""Contains functionality needed for identifying and parsing html tags"""
+
 import cgi
 from collections import defaultdict
 from HTMLParser import HTMLParser
 
 def _wrap_tag(tag):
-    return ('<code class=\"highlightable-tag tag-%s">%s</code>' %
-            (tag, cgi.escape(tag)))
+    return '<code class=\"tag-%s">%s</code>' % (tag, cgi.escape(tag))
 
 def _wrap_attrs(attrs):
     wrapped = ''
     if attrs:
         for key, value in attrs:
-            wrapped += ' ' + key
-            if value:
-                wrapped += '="%s"' % value
+            wrapped += ' ' + key + ('="%s"' % value if value else '')
     return cgi.escape(wrapped)
 
 def _enclose_in_angle_brackets(string):
     return cgi.escape('<') + string + cgi.escape('>')
 
 class TagHighlighter(HTMLParser):
+    r"""Parses html and emits escaped html with wrapped tags
+
+    Incoming html will be escaped and produced as output contained in
+    formatted_html, with the following exception:
+
+    A tag with name TAG will be wrapped in a non-escaped span, which will have a
+    class of 'tag-' followed by TAG.
+
+    tag_to_count will be a dict containing mappings from each encountered tag to
+    the number of each encountered.
+
+    Note that the output will be a list of parsed segments for efficiency.
+
+    Examples:
+    >>> marked_up_html = TagHighlighter('''
+    ... <body>
+    ...   <p>Unclosed tag
+    ...   <form>
+    ...     <label>Form input<label>
+    ...     <input name="form_input" type="text" class="required">
+    ...   <form>
+    ... <body>
+    ... ''')
+    >>> marked_up_html.formatted_html
+    ['\n', '&lt;<code class="tag-body">body</code>&gt;', '\n  ', '&lt;<code class="tag-p">p</code>&gt;', 'Unclosed tag\n  ', '&lt;<code class="tag-form">form</code>&gt;', '\n    ', '&lt;<code class="tag-label">label</code>&gt;', 'Form input', '&lt;<code class="tag-label">label</code>&gt;', '\n    ', '&lt;<code class="tag-input">input</code> name="form_input" type="text" class="required"&gt;', '\n  ', '&lt;<code class="tag-form">form</code>&gt;', '\n', '&lt;<code class="tag-body">body</code>&gt;', '\n']
+    >>> marked_up_html.tag_to_count
+    defaultdict(<type 'int'>, {'body': 2, 'p': 1, 'input': 1, 'form': 2, 'label': 2})
+
+    """
 
     def __init__(self, html):
         HTMLParser.__init__(self)
@@ -63,3 +91,7 @@ class TagHighlighter(HTMLParser):
     def unknown_decl(self, data):
         self.formatted_html.append(
             _enclose_in_angle_brackets(cgi.escape("![" + data + "]")))
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
