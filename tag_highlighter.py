@@ -24,12 +24,11 @@ class TagHighlighter(HTMLParser):
     formatted_html, with the following exception:
 
     A tag with name TAG will be wrapped in a non-escaped span, which will have a
-    class of 'tag-' followed by TAG.
+    class of 'tag-' followed by TAG. Note that, for efficiency, the output will
+    be a list of parsed segments.
 
     tag_to_count will be a dict containing mappings from each encountered tag to
     the number of each encountered.
-
-    Note that the output will be a list of parsed segments for efficiency.
 
     Examples:
     >>> marked_up_html = TagHighlighter('''

@@ -7,6 +7,7 @@ content of other provided websites.
 from urllib2 import Request, HTTPError, URLError, urlopen
 from flask import Flask, make_response, jsonify, render_template, request
 import chardet
+from bs4 import BeautifulSoup
 
 from tag_highlighter import TagHighlighter
 
@@ -87,6 +88,7 @@ def parse_url():
                 encountered in the webpage
     """
     entered_url = request.form['fetch_url']
+    reformat = 'reformat' in request.form and request.form['reformat']
     try:
         http_message = try_urlopen(entered_url)
         encoded_html = http_message.read()
@@ -103,6 +105,9 @@ def parse_url():
         return make_response(
             'The url %s could not be reached: %s.' %
             (entered_url, error.reason), 400)
+
+    if reformat:
+        html = BeautifulSoup(html, 'html.parser').prettify()
 
     marked_up_html = TagHighlighter(html)
     return jsonify(
